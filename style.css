@@ -4,3 +4,7 @@
 .fontBd{
     font-family: "Hind Silliguri", sans-serif;
 }
+.active{
+    background-color: #422ad5;
+    color: white;
+}

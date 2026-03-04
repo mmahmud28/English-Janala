@@ -12,8 +12,8 @@ const displayLessons = (lessons) => {
 
         const btnDiv = document.createElement("div");
         btnDiv.innerHTML = `
-   <button onclick="loadLevelWord(${lesson.level_no})" class="btn btn-outline btn-primary"><i class="fa-solid fa-book-open"></i>Lesson-${lesson.level_no}</button>
-   `;
+            <button id="lesson-btn-${lesson.level_no}" onclick="loadLevelWord(${lesson.level_no})" class="btn btn-outline btn-primary lesson-btn"><i class="fa-solid fa-book-open"></i>Lesson-${lesson.level_no}</button>
+        `;
         levelContainer.append(btnDiv);
 
     }
@@ -25,11 +25,21 @@ loadLessons();
 
 // Word 
 
+const removeActive = () => {
+    const lessonBtns = document.querySelectorAll(".lesson-btn");
+    lessonBtns.forEach(btn=>btn.classList.remove('active'));
+
+}
 const loadLevelWord = (id) => {
     const url = `https://openapi.programming-hero.com/api/level/${id}`;
     fetch(url)
         .then((res) => res.json())
-        .then((data) => displayLavelWord(data.data));
+        .then((data) => {
+            const clickbtn = document.getElementById(`lesson-btn-${id}`);
+            removeActive();
+            clickbtn.classList.add("active")
+            displayLavelWord(data.data)
+        });
 
 }
 
@@ -52,11 +62,11 @@ const displayLavelWord = (words) => {
         const card = document.createElement("div");
         card.innerHTML = `
         <div class="bg-white rounded-xl shadow-sm text-center py-10 px-5 space-y-4">
-            <h2 class="font-bold text-xl">${word.word ? word: "Mahmud"}</h2>
-            <p class="font-semibold">${word.meaning}</p>
-            <div class="fontBd text-2xl font-medium">"${word.pronunciation}"</div>
+            <h2 class="font-bold text-xl">${word.word ? word.word : "No Word"}</h2>
+            <p class="font-semibold">${word.pronunciation ? word.pronunciation : "No Pronunciation"}</p>
+            <div class="fontBd text-2xl font-medium">${word.meaning ? word.meaning : "No Word Meaning"}</div>
             <div class="flex justify-between items-center">
-                <button class="btn bg-[#1A91FF10] hover:bg-[#1A91FF50]"><i class="fa-solid fa-circle-info"></i></button>
+                <button onclick="loadWordDetail(${word.id})" class="btn bg-[#1A91FF10] hover:bg-[#1A91FF50]"><i class="fa-solid fa-circle-info"></i></button>
                 <button class="btn bg-[#1A91FF10] hover:bg-[#1A91FF50]"><i class="fa-solid fa-volume-low"></i></button>
             </div>
         </div>
@@ -65,6 +75,41 @@ const displayLavelWord = (words) => {
     });
 
 
+}
+
+const loadWordDetail=async(id)=>{
+    const url = `https://openapi.programming-hero.com/api/word/${id}`;
+    const res = await fetch(url);
+    const details =await res.json();
+    displayWordDetails(details.data)
+
+}
+
+const createElements = (arr) =>{
+    const htmlElemet = arr.map(el=>`<span class="btn">${el}</span>`);
+    return htmlElemet.join(" ");
+}
+
+const displayWordDetails=(word)=>{
+    const detailsContainer = document.getElementById("details-container");
+    detailsContainer.innerHTML=`
+     <div>
+                    <h2 class="text-2xl font-bold">${word.word} (<i class="fa-solid fa-microphone-lines"></i> : ${word.pronunciation})</h2>
+                </div>
+                <div>
+                    <h2 class="font-bold">Meaning</h2>
+                    <p>${word.meaning}</p>
+                </div>
+                <div>
+                    <h2 class="font-bold">Example</h2>
+                    <p>${word.sentence}</p>
+                </div>
+                <div>
+                    <h2 class="font-bold mb-2">Synonym</h2>
+                   <div class="">${createElements(word.synonyms)}</div>
+                </div>
+    `;
+    document.getElementById("my_modal_5").showModal();
 }
 
 

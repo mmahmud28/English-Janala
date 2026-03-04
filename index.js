@@ -30,6 +30,13 @@ const removeActive = () => {
     lessonBtns.forEach(btn=>btn.classList.remove('active'));
 
 }
+
+function textToVoice (word){
+    const utterance = new SpeechSynthesisUtterance(word);
+    utterance.lang= "en-EN";
+    window.speechSynthesis.speak(utterance);
+}
+
 const loadLevelWord = (id) => {
     const url = `https://openapi.programming-hero.com/api/level/${id}`;
     fetch(url)
@@ -44,6 +51,7 @@ const loadLevelWord = (id) => {
 }
 
 const displayLavelWord = (words) => {
+    manageSpinner(true);
     const wordConatainer = document.getElementById("word-conatainer");
     wordConatainer.innerHTML = "";
 
@@ -55,6 +63,7 @@ const displayLavelWord = (words) => {
             <h2 class="font-bold text-4xl fontBd">নেক্সট Lesson এ যান</h2>
         </div>
          `
+         manageSpinner(false)
         return;
     }
 
@@ -67,22 +76,32 @@ const displayLavelWord = (words) => {
             <div class="fontBd text-2xl font-medium">${word.meaning ? word.meaning : "No Word Meaning"}</div>
             <div class="flex justify-between items-center">
                 <button onclick="loadWordDetail(${word.id})" class="btn bg-[#1A91FF10] hover:bg-[#1A91FF50]"><i class="fa-solid fa-circle-info"></i></button>
-                <button class="btn bg-[#1A91FF10] hover:bg-[#1A91FF50]"><i class="fa-solid fa-volume-low"></i></button>
+                <button onclick="textToVoice('${word.word}')" class="btn bg-[#1A91FF10] hover:bg-[#1A91FF50]"><i class="fa-solid fa-volume-low"></i></button>
             </div>
         </div>
         `
         wordConatainer.append(card);
+        manageSpinner(false)
     });
 
-
 }
+
+const manageSpinner =(status)=>{
+    if(status==true){    
+        document.getElementById("spinner").classList.remove("hidden");
+        document.getElementById("word-conatainer").classList.add("hidden");
+    } else if(status==false){
+         document.getElementById("spinner").classList.add("hidden");
+         document.getElementById("word-conatainer").classList.remove("hidden");
+    }
+}
+
 
 const loadWordDetail=async(id)=>{
     const url = `https://openapi.programming-hero.com/api/word/${id}`;
     const res = await fetch(url);
     const details =await res.json();
     displayWordDetails(details.data)
-
 }
 
 const createElements = (arr) =>{
@@ -112,7 +131,16 @@ const displayWordDetails=(word)=>{
     document.getElementById("my_modal_5").showModal();
 }
 
-
-
-
-
+document.getElementById("btn-search").addEventListener("click",()=>{
+    removeActive();
+    const inputsearch = document.getElementById("input-search");
+    const searchValue =inputsearch.value;
+    fetch("https://openapi.programming-hero.com/api/words/all")
+    .then(res=>res.json())
+    .then(date=>{
+        const allWords= date.data;
+        const filterwords = allWords.filter(word=>word.word.includes(searchValue));
+        displayLavelWord(filterwords);
+        inputsearch.value="";
+    });
+});
